@@ -11,16 +11,14 @@ export default class RainChart {
 
   render() {
     let d = preprocessing(this._data).slice(0, 12);
-
-    console.log(d);
     const width = 550;
     const height = 550;
-    const lineH = 30;
+    const lineH = 100;
     const lineWidth = 40;
     const padding = 5;
     const innerRadius = 100;
     const outerRadius = 60;
-
+    let yScale = d3.scaleSqrt().domain([0, 15]).range([5, lineH]);
     var svg = d3
       .select(".rain")
       .append("svg")
@@ -40,7 +38,7 @@ export default class RainChart {
       .arc()
       .innerRadius(innerRadius)
       .outerRadius(function (d) {
-        return innerRadius + d.data.precip * lineH;
+        return innerRadius + yScale(d.data.precip);
       })
       .padRadius(innerRadius);
 
