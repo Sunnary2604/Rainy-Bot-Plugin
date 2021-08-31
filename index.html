@@ -7,12 +7,25 @@
     <title>Rainy</title>
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script src="https://d3js.org/d3.v6.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/canvg@3.0.4/lib/umd.js"></script>
 </head>
 
 <body>
     <div class="rain">
     </div>
- 
+    <script type="module">
+        import RainChart from "../drawRainChart.js"
+        const rainChart = new RainChart()
+        d3.json("./data.json", function (d) { }).then(function (
+            data
+        ) {
+
+            rainChart.data(data)
+            rainChart.render()
+        });
+    </script>
+    <canvas >
+
 </body>
 
 </html>

@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "canvg": "^3.0.7",
+    "d3-svg-to-png": "^0.1.6"
+  }
+}
