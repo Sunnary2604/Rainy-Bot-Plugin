@@ -13,12 +13,13 @@ export default class RainChart {
     let dFull = preprocessing(this._data);
     const width = 512;
     const height = 512;
-    const lineH = 150;
+    const lineH = 100;
     const lineWidth = 14.5;
     const padding = 5;
     const innerRadius = 150;
     const outerRadius = 60;
     let yScale = d3.scaleSqrt().domain([0, 15]).range([5, lineH]);
+    const showSecond = dFull.length === 12;
     var svg = d3
       .select(".rain")
       .append("svg")
@@ -27,6 +28,7 @@ export default class RainChart {
 
     if (dFull !== null) {
       let d = dFull.slice(0, 12);
+
       // render Rain
       let pie = d3
         .pie()
@@ -35,15 +37,35 @@ export default class RainChart {
         .endAngle(2 * Math.PI)
         .sort(null)
         .value(100);
-      let arc = d3
-        .arc()
-        .innerRadius(innerRadius)
-        .outerRadius(function (d) {
-          return innerRadius + yScale(d.data.precip);
-        })
-        .padRadius(innerRadius);
+      let arc;
+      let arcSmall;
+      if (showSecond) {
+        arc = d3
+          .arc()
+          .innerRadius(innerRadius + 20)
+          .outerRadius(function (d) {
+            return innerRadius + yScale(d.data.precip) + 20;
+          })
+          .padRadius(innerRadius);
+        arcSmall = d3
+          .arc()
+          .innerRadius(innerRadius)
+          .outerRadius(function (d) {
+            return innerRadius + 10;
+          })
+          .padRadius(innerRadius);
+      } else {
+        arc = d3
+          .arc()
+          .innerRadius(innerRadius)
+          .outerRadius(function (d) {
+            return innerRadius + yScale(d.data.precip);
+          })
+          .padRadius(innerRadius);
+      }
 
       const arcs = pie(d);
+
       const day = new Date(arcs[0].data.fxTime);
       const minute = day.getMinutes();
       const hour = day.getHours();
@@ -55,15 +77,42 @@ export default class RainChart {
       }
 
       const cell = svg.selectAll("#selector").data(arcs).enter();
-
-      cell
-        .append("path")
-        .attr("d", arc)
-        .attr("fill", function (d) {
-          return colorSelector(d.data.rainType);
-        })
-        .attr("stroke", "#fff")
-        .attr("transform", "translate(" + width / 2 + ", " + height / 2 + ")");
+      if (showSecond) {
+        cell
+          .append("path")
+          .attr("d", arc)
+          .attr("fill", function (d) {
+            return colorSelector(d.data.rainType);
+          })
+          .attr("stroke", "#fff")
+          .attr(
+            "transform",
+            "translate(" + width / 2 + ", " + height / 2 + ")"
+          );
+        cell
+          .append("path")
+          .attr("d", arcSmall)
+          .attr("fill", function (d) {
+            return colorSelector("小雨");
+          })
+          .attr("stroke", "#fff")
+          .attr(
+            "transform",
+            "translate(" + width / 2 + ", " + height / 2 + ")"
+          );
+      } else {
+        cell
+          .append("path")
+          .attr("d", arc)
+          .attr("fill", function (d) {
+            return colorSelector(d.data.rainType);
+          })
+          .attr("stroke", "#fff")
+          .attr(
+            "transform",
+            "translate(" + width / 2 + ", " + height / 2 + ")"
+          );
+      }
 
       cell
         .append("text")
@@ -78,9 +127,9 @@ export default class RainChart {
         .attr("stroke-width", 0.5)
         .attr("transform", function (d, i) {
           let x =
-            Math.sin((-d.startAngle - d.endAngle) / 2 - 2.9) * 120 + width / 2;
+            Math.sin((-d.startAngle - d.endAngle) / 2 - 2.9) * (innerRadius-20) + width / 2;
           let y =
-            Math.cos((-d.startAngle - d.endAngle) / 2 - 2.9) * 120 +
+            Math.cos((-d.startAngle - d.endAngle) / 2 - 2.9) * (innerRadius-20) +
             10 +
             height / 2;
           return "translate(" + x + ", " + y + ")";
@@ -92,7 +141,7 @@ export default class RainChart {
         .attr("x1", 0)
         .attr("y1", 0)
         .attr("x2", 0)
-        .attr("y2", 100)
+        .attr("y2", innerRadius-40)
         .attr("stroke", "#fff")
         .attr("stroke-width", 6)
         .attr("transform", function (d, i) {
@@ -115,7 +164,7 @@ export default class RainChart {
         .attr("x1", 0)
         .attr("y1", 0)
         .attr("x2", 0)
-        .attr("y2", 99)
+        .attr("y2", innerRadius-41)
         .attr("stroke", colorSelector(d[0].rainType))
         .attr("stroke-width", 4)
         .attr("transform", function (d, i) {
@@ -208,11 +257,10 @@ export default class RainChart {
         .attr("text-anchor", "middle")
         .attr("stroke", "#fff")
         .attr("stroke-width", 0.5)
-        .attr("font-family", "Luminari, fantasy")
         .attr("fill", "#666")
         .attr("transform", function (d, i) {
           let x = -20 + width / 2;
-          let y = 0 + height / 2;
+          let y = 30 + height / 2;
           return "translate(" + x + ", " + y + ")";
         });
 
@@ -224,11 +272,10 @@ export default class RainChart {
         .attr("text-anchor", "middle")
         .attr("stroke", "#fff")
         .attr("stroke-width", 0.5)
-        .attr("font-family", "Luminari, fantasy")
         .attr("fill", "#666")
         .attr("transform", function (d, i) {
           let x = -20 + width / 2;
-          let y = 50 + height / 2;
+          let y = 0 + height / 2;
           return "translate(" + x + ", " + y + ")";
         });
       svg
@@ -245,11 +292,16 @@ export default class RainChart {
 }
 /**设定下雨量*/
 function preprocessing(data) {
-  const a = data.minutely.filter((d) => {
+  const allZero = data.minutely.filter((d) => {
     return parseFloat(d.precip) === 0;
   });
 
-  if (a.length !== 24) {
+  const first = data.minutely.filter((d, i) => {
+    return i < 12 && parseFloat(d.precip) === 0;
+  });
+  const second = data.minutely.slice(12);
+
+  if (allZero.length !== 24) {
     for (let item of data.minutely) {
       if (item.type === "rain") {
         if (item.precip === 0) item.rainType = "晴天";
@@ -260,6 +312,10 @@ function preprocessing(data) {
         else if (item.precip < 250 / 24) item.rainType = "大暴雨";
         else if (item.precip >= 250 / 24) item.rainType = "特大暴雨";
       }
+    }
+    if (first.length === 12) {
+      return second;
+    } else {
     }
     return data.minutely;
   } else {
