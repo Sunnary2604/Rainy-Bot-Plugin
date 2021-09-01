@@ -11,13 +11,12 @@ export default class RainChart {
 
   render() {
     let dFull = preprocessing(this._data);
-    console.log(dFull);
-    const width = 380;
-    const height = 430;
-    const lineH = 100;
-    const lineWidth = 10;
+    const width = 512;
+    const height = 512;
+    const lineH = 150;
+    const lineWidth = 14.5;
     const padding = 5;
-    const innerRadius = 100;
+    const innerRadius = 150;
     const outerRadius = 60;
     let yScale = d3.scaleSqrt().domain([0, 15]).range([5, lineH]);
     var svg = d3
@@ -25,7 +24,8 @@ export default class RainChart {
       .append("svg")
       .attr("width", width)
       .attr("height", height)
-      .attr("viewBox", [-width / 2 - 20, -height / 2 + 80, width, height]);
+      // .attr("viewBox", [-width / 2, -height / 2 , width, height])
+      .style("background-color", "#bbb");
 
     if (dFull !== null) {
       let d = dFull.slice(0, 12);
@@ -50,7 +50,7 @@ export default class RainChart {
       const minute = day.getMinutes();
       const hour = day.getHours();
       const startA = (minute / 30) * Math.PI;
-      const currStartA = (new Date().getMinutes / 30) * Math.PI;
+      const currStartA = (new Date().getMinutes() / 30) * Math.PI;
       for (let item of arcs) {
         item.startAngle += startA;
         item.endAngle += startA;
@@ -64,21 +64,27 @@ export default class RainChart {
         .attr("fill", function (d) {
           return colorSelector(d.data.rainType);
         })
-        .attr("stroke", "#fff");
+        .attr("stroke", "#fff")
+        .attr("transform", "translate(" + width / 2 + ", " + height / 2 + ")");
 
       cell
         .append("text")
         .text(function (d, i) {
           return arcs[i].data.fxTime.slice(14, 16);
         })
+        .attr("font-size", "28px")
         .attr("text-anchor", "middle")
         .attr("font-family", "Luminari, fantasy")
         .attr("fill", "#666")
         .attr("stroke", "#fff")
-        .attr("stroke-width", 0.2)
+        .attr("stroke-width", 0.5)
         .attr("transform", function (d, i) {
-          let x = Math.sin((-d.startAngle - d.endAngle) / 2 - 2.9) * 80;
-          let y = Math.cos((-d.startAngle - d.endAngle) / 2 - 2.9) * 80;
+          let x =
+            Math.sin((-d.startAngle - d.endAngle) / 2 - 2.9) * 120 + width / 2;
+          let y =
+            Math.cos((-d.startAngle - d.endAngle) / 2 - 2.9) * 120 +
+            10 +
+            height / 2;
           return "translate(" + x + ", " + y + ")";
         });
 
@@ -88,12 +94,12 @@ export default class RainChart {
         .attr("x1", 0)
         .attr("y1", 0)
         .attr("x2", 0)
-        .attr("y2", 60)
+        .attr("y2", 100)
         .attr("stroke", "#fff")
-        .attr("stroke-width", 5)
+        .attr("stroke-width", 6)
         .attr("transform", function (d, i) {
-          let x = 1.5;
-          let y = 0;
+          let x = width / 2 + 1.5;
+          let y = height / 2;
           return (
             "translate(" +
             x +
@@ -111,12 +117,12 @@ export default class RainChart {
         .attr("x1", 0)
         .attr("y1", 0)
         .attr("x2", 0)
-        .attr("y2", 59)
+        .attr("y2", 99)
         .attr("stroke", colorSelector(d[0].rainType))
-        .attr("stroke-width", 3)
+        .attr("stroke-width", 4)
         .attr("transform", function (d, i) {
-          let x = 1.5;
-          let y = 0;
+          let x = width / 2 + 1.5;
+          let y = height / 2;
           return (
             "translate(" +
             x +
@@ -129,64 +135,72 @@ export default class RainChart {
           );
         });
       // clock center
-      svg.append("circle").attr("r", 6).attr("height", 60).attr("fill", "#fff");
+      svg
+        .append("circle")
+        .attr("r", 6)
+        .attr("height", 60)
+        .attr("fill", "#fff")
+        .attr("transform", "translate(" + width / 2 + ", " + height / 2 + ")");
       svg
         .append("circle")
         .attr("r", 5)
         .attr("height", 60)
-        .attr("fill", colorSelector(d[0].rainType));
+        .attr("fill", colorSelector(d[0].rainType))
+        .attr("transform", "translate(" + width / 2 + ", " + height / 2 + ")");
       //bar chart
-      const bar = svg.selectAll("#selector").data(dFull).enter();
-      bar
-        .append("rect")
-        .attr("x", (d, i) => (lineWidth + padding) * i - 200)
-        .attr("y", (d) => -yScale(d.precip) + 250)
-        .attr("width", lineWidth)
-        .attr("stroke", "#fff")
-        .attr("stroke-width", 0.5)
-        .attr("height", function (d, i) {
-          return yScale(d.precip);
-        })
-        .attr("fill", function (d, i) {
-          return colorSelector(d.rainType);
-        });
+      // const bar = svg.selectAll("#selector").data(dFull).enter();
+
+      // bar
+      //   .append("rect")
+      //   .attr("x", (d, i) => (lineWidth + padding) * i - width / 2 + 20)
+      //   .attr("y", (d) => -yScale(d.precip) + 305)
+      //   .attr("width", lineWidth)
+      //   .attr("stroke", "#fff")
+      //   .attr("stroke-width", 0.5)
+      //   .attr("height", function (d, i) {
+      //     return yScale(d.precip);
+      //   })
+      //   .attr("fill", function (d, i) {
+      //     return colorSelector(d.rainType);
+      //   });
       // render minut text
-      bar
-        .append("text")
-        .text(function (d, i) {
-          if (i % 4 == 0) return d.fxTime.slice(14, 16);
-          else return "";
-        })
-        .attr("font-size", "10px")
-        .attr("text-anchor", "middle")
-        .attr("stroke", "#fff")
-        .attr("stroke-width", 0.2)
-        .attr("font-family", "Luminari, fantasy")
-        .attr("fill", "#666")
-        .attr("transform", function (d, i) {
-          let x = (lineWidth + padding) * i - 200 + 5;
-          let y = 282;
-          return "translate(" + x + ", " + y + ")";
-        });
+      // bar
+      //   .append("text")
+      //   .text(function (d, i) {
+      //     if (i % 4 == 0) return d.fxTime.slice(14, 16);
+      //     else return "";
+      //   })
+      //   .attr("font-size", "14px")
+      //   .attr("text-anchor", "middle")
+      //   .attr("stroke", "#fff")
+      //   .attr("stroke-width", 0.2)
+      //   .attr("font-family", "Luminari, fantasy")
+      //   .attr("fill", "#666")
+      //   .attr("transform", function (d, i) {
+      //     let x = (lineWidth + padding) * i - 200 + 5;
+      //     let y = 330;
+      //     return "translate(" + x + ", " + y + ")";
+      //   });
       // render hour text
-      bar
-        .append("text")
-        .text(function (d, i) {
-          if (d.fxTime.slice(14, 16) < 5 || i == 0)
-            return d.fxTime.slice(11, 13);
-          else return "";
-        })
-        .attr("font-size", "13px")
-        .attr("text-anchor", "middle")
-        .attr("stroke", "#fff")
-        .attr("stroke-width", 0.2)
-        .attr("font-family", "Luminari, fantasy")
-        .attr("fill", "#666")
-        .attr("transform", function (d, i) {
-          let x = (lineWidth + padding) * i - 200 + 5;
-          let y = 270;
-          return "translate(" + x + ", " + y + ")";
-        });
+      // bar
+      //   .append("text")
+      //   .text(function (d, i) {
+      //     if (d.fxTime.slice(14, 16) < 5 || i == 0)
+      //       return d.fxTime.slice(11, 16);
+      //     else return "";
+      //   })
+      //   .attr("font-size", "18px")
+      //   .attr("font-weight", "800")
+      //   .attr("text-anchor", "middle")
+      //   .attr("stroke", "#fff")
+      //   .attr("stroke-width", 0.2)
+      //   .attr("font-family", "Luminari, fantasy")
+      //   .attr("fill", "#666")
+      //   .attr("transform", function (d, i) {
+      //     let x = (lineWidth + padding) * i - width / 2 + 30;
+      //     let y = 328;
+      //     return "translate(" + x + ", " + y + ")";
+      //   });
     } else {
       svg
         .append("text")
