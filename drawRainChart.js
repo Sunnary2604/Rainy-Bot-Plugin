@@ -23,9 +23,7 @@ export default class RainChart {
       .select(".rain")
       .append("svg")
       .attr("width", width)
-      .attr("height", height)
-      // .attr("viewBox", [-width / 2, -height / 2 , width, height])
-      .style("background-color", "#bbb");
+      .attr("height", height);
 
     if (dFull !== null) {
       let d = dFull.slice(0, 12);
@@ -213,8 +211,8 @@ export default class RainChart {
         .attr("font-family", "Luminari, fantasy")
         .attr("fill", "#666")
         .attr("transform", function (d, i) {
-          let x = -20;
-          let y = 30;
+          let x = -20 + width / 2;
+          let y = 0 + height / 2;
           return "translate(" + x + ", " + y + ")";
         });
 
@@ -229,8 +227,8 @@ export default class RainChart {
         .attr("font-family", "Luminari, fantasy")
         .attr("fill", "#666")
         .attr("transform", function (d, i) {
-          let x = -20;
-          let y = 80;
+          let x = -20 + width / 2;
+          let y = 50 + height / 2;
           return "translate(" + x + ", " + y + ")";
         });
       svg
